@@ -1,0 +1,51 @@
+{
+    "env": {
+        "node": true,
+        "es6": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 7
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "eqeqeq": [
+            "error",
+            "allow-null"
+        ],
+        "curly": [
+            "error",
+            "multi"
+        ],
+        "no-console": [
+            "off"
+        ],
+        "strict": [
+            "error"
+        ],
+        "dot-notation": [
+            "error",
+            {
+                "allowKeywords": true
+            }
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "quotes": [
+            "error",
+            "backtick",
+            {
+                "avoidEscape": true
+            }
+        ],
+        "comma-dangle": [
+            "error",
+            "always-multiline"
+        ],
+        "space-before-function-paren": [
+            "error",
+            "never"
+        ]
+    }
+}
