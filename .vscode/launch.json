@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Tests",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--no-timeouts",
+                "--colors",
+                "--exit"
+            ],
+            "runtimeArgs": [
+                "--nolazy"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "outFiles": [ "${workspaceFolder}/lib/**/*.js" ],
+            "smartStep": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Express",
+            "program": "${workspaceRoot}/lib/index.js"
+        }
+    ]
+}
