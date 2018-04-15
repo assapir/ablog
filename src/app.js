@@ -10,11 +10,11 @@ app.listen(port, () => {
 });
 
 app.get(`/`, (req, res) => {
-    res.send(200);
+    res.sendStatus(200);
 });
 
 app.get(`*`, (req, res) => {
-    res.send(404);
+    res.sendStatus(404);
 });
 
 module.exports = app;
