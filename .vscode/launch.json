@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Express",
-            "program": "${workspaceRoot}/lib/index.js"
+            "program": "${workspaceRoot}/lib/app.js"
         }
     ]
 }
