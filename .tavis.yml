@@ -1,0 +1,10 @@
+language: node_js
+os: 
+  - osx
+  - linux
+node_js:
+  - "node"
+script:
+  - npm run eslint
+  - npm run build
+  - npm test
