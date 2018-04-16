@@ -17,9 +17,18 @@ describe(`Routing tests`, function() {
         it(`Will retun 404 on not found`, function(done){
             request(app)
             .get(`/blabla`)
-            .expect(200)
             .end((err, res) => {
-                expect(res.status).to.equal(404);
+                expect(res.status).to.be.equal(404);
+                done();
+            });
+        });
+    });
+    describe(`POST`, function(){
+        it(`Will always return 404`, function(done){
+            request(app)
+            .post(`/`)
+            .end((err, res) => {
+                expect(res.status).to.be.equal(404);
                 done();
             });
         });
