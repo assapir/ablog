@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "build": "babel src -d lib",
-    "test": "nyc -r=lcov mocha --exit",
+    "test": "nyc -r=lcov -r=text mocha --exit",
     "eslint": "eslint src/**/*.js test/**/*.js --fix",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
