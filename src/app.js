@@ -10,7 +10,7 @@ app.listen(port, () => {
 });
 
 app.get(`/`, (req, res) => {
-    res.sendStatus(200);
+    res.sendFile(__dirname + `/html/index.html`);
 });
 
 app.all(`*`, (req, res) => {

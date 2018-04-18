@@ -14,6 +14,7 @@ describe(`Routing tests`, function() {
                 done();
             });
         });
+
         it(`Will retun 404 on not found`, function(done){
             request(app)
             .get(`/blabla`)
@@ -23,6 +24,7 @@ describe(`Routing tests`, function() {
             });
         });
     });
+    
     describe(`POST`, function(){
         it(`Will always return 404`, function(done){
             request(app)

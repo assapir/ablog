@@ -24,6 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Express",
+            "preLaunchTask": "build",
             "program": "${workspaceRoot}/lib/app.js"
         }
     ]
