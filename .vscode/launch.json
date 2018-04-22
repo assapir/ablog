@@ -11,6 +11,8 @@
             "args": [
                 "--no-timeouts",
                 "--colors",
+                "-r",
+                "jsdom-global/register",
                 "--exit"
             ],
             "runtimeArgs": [
