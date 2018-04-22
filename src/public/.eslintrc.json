@@ -1,9 +1,9 @@
 {
     "env": {
-        "node": true
+        "browser": true
     },
     "parserOptions": {
         "ecmaVersion": 2017,
-        "sourceType": "module"
+        "sourceType": "script"
     }
 }
