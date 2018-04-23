@@ -1,13 +1,13 @@
 'use strict';
 
-const request = require(`supertest`),
+const request = require(`chai`).request,
     expect = require(`chai`).expect,
     app = require(`../lib/app`);
 
 describe(`Routing tests`, function() {
     describe(`GET`, function() {
         it(`Will return 200 on /`, function(done){
-            request(app)
+            request(`localhost:3000`)
             .get(`/`)
             .end((err, res) => {
                 expect(res.status).to.equal(200);
