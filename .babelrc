@@ -5,5 +5,8 @@
   "sourceMaps": "inline",
   "plugins": [
     "transform-runtime"
-  ]
+  ],
+  "env": {
+    "comments": false
+  }
 }
