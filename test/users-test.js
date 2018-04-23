@@ -8,15 +8,19 @@ const Users = require(`../lib/users`).Users;
 describe(`Users class`, function() {
     describe(`Init function`, function() {
         it(`Will connect to db`, async function() {
-            const dbMock = sinon.mock(mongo.Db);
-            dbMock.expects().once();
-            const clientMock = sinon.mock(mongo.MongoClient, `connect`);
-            clientMock.expects(`connect`).once().withExactArgs(`mongodb://localhost:27017/`).resolves();
+            const dbMock = sinon.mock(mongo.Db, `collection`);
+            const clientMock = sinon.mock(new mongo.MongoClient(), `db`);
+            clientMock.expects(`db`).once().returns(dbMock);
+            const mongoMock = sinon.mock(mongo.MongoClient, `connect`);
+            mongoMock.expects(`connect`)
+            .once()
+            .withExactArgs(`mongodb://localhost:27017/`)
+            .resolves(clientMock);
             
             const users = new Users();
             await users.init();
-            dbMock.verify();
             clientMock.verify();
+            mongoMock.verify();
             expect(users.isInit).to.equals(true);
         });
 
