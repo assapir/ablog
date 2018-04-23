@@ -7,7 +7,7 @@ const request = require(`supertest`),
 describe(`Routing tests`, function() {
     describe(`GET`, function() {
         it(`Will return 200 on /`, function(done){
-            request(`app`)
+            request(app)
             .get(`/`)
             .end((err, res) => {
                 expect(res.status).to.equal(200);
