@@ -1,39 +1,30 @@
 'use strict';
 
 const expect = require(`chai`).expect;
-const mongo = require(`mongodb`);
 const sinon = require(`sinon`);
+const MongoClient = require(`mongo-mock`).MongoClient;
 const Users = require(`../lib/users`).Users;
 
 describe(`Users class`, function() {
-    describe(`Init function`, function() {
-        it(`Will connect to db`, async function() {
-            const dbMock = sinon.mock(mongo.Db, `collection`);
-            const clientMock = sinon.mock(new mongo.MongoClient(), `db`);
-            clientMock.expects(`db`).once().returns(dbMock);
-            const mongoMock = sinon.mock(mongo.MongoClient, `connect`);
-            mongoMock.expects(`connect`)
-            .once()
-            .withExactArgs(`mongodb://localhost:27017/`)
-            .resolves(clientMock);
-            
-            const users = new Users();
-            await users.init();
-            clientMock.verify();
-            mongoMock.verify();
-            expect(users.isInit).to.equals(true);
-        });
+    describe(`addUser`, function() {
+        it(`Will call db insert`, async function() {
+            const username = `username`;
+            const password = `password`;
 
-        it(`Will throw on faliure`, async function() {
-            const dbMock = sinon.mock(mongo.MongoClient, `connect`);
-            dbMock.expects(`connect`).once().rejects(Error);
-            const users = new Users();
-            try {
-                await users.init();
-            } catch (Error) {
-                expect();
-            }
-            dbMock.verify();
+            const client = await MongoClient.connect(`mongodb://localhost:27017/`);
+            const db = client.db(`site`);
+            const collection = db.collection(`users`);
+
+            const collectionMock = sinon.mock(collection, `insert`);
+            collectionMock.expects(`insert`)
+                .once()
+                .withExactArgs({ username: username, password: password })
+                .resolves({ success: true });
+
+            const users = new Users(collectionMock);
+            const result = await users.addUser(username, password);
+            collectionMock.verify();
+            expect(result.sucess).to.equals(true);
         });
     });
 });

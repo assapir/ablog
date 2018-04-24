@@ -1,10 +1,22 @@
 import express from "express";
 import joi from "joi";
+import { MongoClient } from "mongodb";
 import { Users } from './users';
 
 const userRouter = express.Router();
 
-const _users = new Users(); // we want to always use the same instance (sort of singleton...)
+let _users; // we want to always use the same instance (sort of singleton...)
+async function getUsersInstance() {
+    if (typeof _users !== `undefined`)
+        return _users;
+
+    const client = await MongoClient.connect(`mongodb://localhost:27017/`);
+    const db = client.db(`site`);
+    const collection = db.collection(`users`);
+    collection.ensureIndex({ username: 1 }, { "unique": 1 });
+    return _users = new Users(collection);
+}
+
 
 // for parsing POST body
 userRouter.use(express.json()); // to support JSON-encoded bodies
@@ -14,16 +26,16 @@ userRouter.post(`/add`, async function(req, res) {
     try {
         const validator = checkScheme(req.body);
         if (validator.error === null) {
-            const dbResult = await _users.addUser(req.body.username, req.body.password);
+            const db = await getUsersInstance();
+            const dbResult = await db.addUser(req.body.username, req.body.password);
             if (dbResult.result.ok && dbResult.result.n === 1) // result OK and nothing is not modified
                 res.send(dbResult);
             else if (dbResult.result.n === 0)
-                res.send({error: `username already exist`});
+                res.send({ error: `username already exist` });
             else
-                res.send({error: `somthing bad happend, db problem`});
+                res.send({ error: `somthing bad happend, db problem` });
         } else
             res.send({ error: `Wrong API call: ${validator.error}` });
-
     } catch (error) {
         res.send({ error: error.message });
     }
