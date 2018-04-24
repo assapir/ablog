@@ -1,19 +1,42 @@
 import express from "express";
+import joi from "joi";
 import { Users } from './users';
 
 const userRouter = express.Router();
 
-userRouter.get(`/add/`, async function(req, res) {
+const _users = new Users(); // we want to always use the same instance (sort of singleton...)
+
+// for parsing POST body
+userRouter.use(express.json()); // to support JSON-encoded bodies
+userRouter.use(express.urlencoded()); // to support URL-encoded bodies
+
+userRouter.post(`/add`, async function(req, res) {
     try {
-        const users = new Users();
-        const query = req.query;
-        if (typeof query.userName !== `undefined` && typeof query.password !== `undefined`)
-            res.send(await users.addUser(query.userName, query.password));
-        else
-            res.send( {error: `Wrong API call`});
+        const validator = checkScheme(req.body);
+        if (validator.error === null) {
+            const dbResult = await _users.addUser(req.body.username, req.body.password);
+            if (dbResult.result.ok && dbResult.result.n === 1) // result OK and nothing is not modified
+                res.send(dbResult);
+            else if (dbResult.result.n === 0)
+                res.send({error: `username already exist`});
+            else
+                res.send({error: `somthing bad happend, db problem`});
+        } else
+            res.send({ error: `Wrong API call: ${validator.error}` });
+
     } catch (error) {
         res.send({ error: error.message });
     }
 });
 
+
+function checkScheme(reqBody) {
+    const schema = joi.object().keys({
+        username: joi.string().alphanum().min(5).required(),
+        password: joi.string().min(8).required(),
+        email: joi.string().email(),
+    }).with(`username`, `password`).without(`username`, `email`);
+
+    return joi.validate(reqBody, schema);
+}
 export { userRouter };
