@@ -15,14 +15,14 @@ beforeEach(async function() {
 describe(`Users class`, function() {
     describe(`addUser`, function() {
         it(`Will call db insert`, async function() {
-            const username = `username`;
-            const password = `password`;
+            const username = `thisIsUserName`;
+            const password = `ThisIsPassword`;
 
             sinon.spy(collectionMock, `insert`);
             
             const users = new Users(collectionMock);
             await users.addUser(username, password);
-            expect(collectionMock.insert.calledOnce);
+            expect(collectionMock.insert.calledWithExactly({ username: username, password: password }));
             collectionMock.insert.restore(); // Unwraps the spy
         });
     });
