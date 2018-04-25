@@ -13,7 +13,6 @@ async function getUsersInstance() {
     const client = await MongoClient.connect(`mongodb://localhost:27017/`);
     const db = client.db(`site`);
     const collection = db.collection(`users`);
-    collection.ensureIndex({ username: 1 }, { "unique": 1 });
     return _users = new Users(collection);
 }
 
@@ -22,22 +21,38 @@ async function getUsersInstance() {
 userRouter.use(express.json()); // to support JSON-encoded bodies
 userRouter.use(express.urlencoded({ extended: true })); // to support URL-encoded bodies
 
-userRouter.post(`/add`, async(req, res) => {
+userRouter.post(`/add`, async (req, res) => {
     try {
         const validator = checkScheme(req.body);
         if (validator.error === null) {
-            const db = await getUsersInstance();
-            const dbResult = await db.addUser(req.body.username, req.body.password);
-            if (dbResult.result.ok && dbResult.result.n === 1) // result OK and nothing is not modified
-                res.send(dbResult);
-            else if (dbResult.result.n === 0)
-                res.send({ error: `username already exist` });
+            const users = await getUsersInstance();
+            const result = await users.addUser(req.body.username, req.body.password);
+            if (result.insertedCount > 0) // result OK and nothing is not modified
+                res.send(result);
             else
-                res.send({ error: `somthing bad happend, db problem` });
+                res.send(JSON.stringify({ error: `somthing bad happend, db problem` }));
         } else
-            res.send({ error: `Wrong API call: ${validator.error}` });
-    } catch (error) {
-        res.send({ error: error.message });
+            res.send(JSON.stringify({ error: `Wrong API call: ${validator.error}` }));
+    } catch (err) {
+        if (err.code === 11000)
+            res.send(JSON.stringify({ error: `username already exist` }));
+        else
+            res.send(JSON.stringify({ error: err }));
+    }
+});
+
+userRouter.get(`/check`, async (req, res) => {
+    try {
+        const users = await getUsersInstance();
+        if (typeof req.query.username === `undefined`)
+            throw new Error(`Wrong API call, No username parameter`);
+        const result = await users.checkUser(req.query.username);
+        if (result.length > 0)
+            res.send(JSON.stringify({ message: `found ${result.length} for ${req.query.username}` }));
+        else
+            throw new Error(`No result yield for ${req.query.username}`);
+    } catch (err) {
+        res.send({ error: err.message });
     }
 });
 
@@ -51,4 +66,5 @@ function checkScheme(reqBody) {
 
     return joi.validate(reqBody, schema);
 }
+
 export { userRouter };
