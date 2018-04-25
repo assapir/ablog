@@ -20,9 +20,9 @@ async function getUsersInstance() {
 
 // for parsing POST body
 userRouter.use(express.json()); // to support JSON-encoded bodies
-userRouter.use(express.urlencoded()); // to support URL-encoded bodies
+userRouter.use(express.urlencoded({ extended: true })); // to support URL-encoded bodies
 
-userRouter.post(`/add`, async function(req, res) {
+userRouter.post(`/add`, async(req, res) => {
     try {
         const validator = checkScheme(req.body);
         if (validator.error === null) {
