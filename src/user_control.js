@@ -30,14 +30,14 @@ userRouter.post(`/add`, async (req, res) => {
             if (result.insertedCount > 0) // result OK and nothing is not modified
                 res.send(result);
             else
-                res.send(JSON.stringify({ error: `somthing bad happend, db problem` }));
+                res.status(400).send(JSON.stringify({ error: `somthing bad happend, db problem` }));
         } else
-            res.send(JSON.stringify({ error: `Wrong API call: ${validator.error}` }));
+            res.status(400).send(JSON.stringify({ error: `Wrong API call: ${validator.error}` }));
     } catch (err) {
         if (err.code === 11000)
-            res.send(JSON.stringify({ error: `username already exist` }));
+            res.status(400).send(JSON.stringify({ error: `username already exist` }));
         else
-            res.send(JSON.stringify({ error: err }));
+            res.status(400).send(JSON.stringify({ error: err }));
     }
 });
 
@@ -48,11 +48,11 @@ userRouter.get(`/check`, async (req, res) => {
             throw new Error(`Wrong API call, No username parameter`);
         const result = await users.checkUser(req.query.username);
         if (result.length > 0)
-            res.send(JSON.stringify({ message: `found ${result.length} for ${req.query.username}` }));
+            res.status(400).send(JSON.stringify({ message: `found ${result.length} for ${req.query.username}` }));
         else
             throw new Error(`No result yield for ${req.query.username}`);
     } catch (err) {
-        res.send({ error: err.message });
+        res.status(400).send({ error: err.message });
     }
 });
 
