@@ -12,15 +12,15 @@ chai.use(chaiAsPromised);
 mongo.max_delay = 0; // not pretend async delay
 
 let collectionMock;
-beforeEach(async function() {
+beforeEach(async function () {
     const client = await MongoClient.connect(`mongodb://localhost:27017/`);
     const db = client.db(`site`);
     collectionMock = db.collection(`users`);
 });
 
-describe(`Users class`, function() {
-    describe(`addUser`, function() {
-        it(`Will call db insert`, async function() {
+describe(`Users class`, function () {
+    describe(`addUser`, function () {
+        it(`Will call db insert`, async function () {
             const username = `thisIsUserName`;
             const password = `ThisIsPassword`;
 
@@ -31,7 +31,7 @@ describe(`Users class`, function() {
             expect(collectionMock.insert.calledWithExactly({ username: username, password: password }));
             collectionMock.insert.restore(); // Unwraps the spy
         });
-        it(`Will will throw with error code`, async function() {
+        it(`Will will throw with error code`, async function () {
             const username = `thisIsUserName`;
             const password = `ThisIsPassword`;
 
@@ -48,8 +48,8 @@ describe(`Users class`, function() {
             collectionMock.insert.restore(); // Unwraps the spy
         });
     });
-    describe(`checkUser`, function() {
-        it(`Will call db find`, async function() {
+    describe(`checkUser`, function () {
+        it(`Will call db find`, async function () {
             const username = `thisIsUserName`;
 
             sinon.spy(collectionMock, `find`);
@@ -60,8 +60,8 @@ describe(`Users class`, function() {
             collectionMock.find.restore(); // Unwraps the spy
         });
     });
-    describe(`changeUsername`, function() {
-        it(`Will call db update`, async function() {
+    describe(`changeUsername`, function () {
+        it(`Will call db update`, async function () {
             const username = `thisIsUserName`;
 
             sinon.spy(collectionMock, `update`);
@@ -74,8 +74,8 @@ describe(`Users class`, function() {
             collectionMock.update.restore(); // Unwraps the spy
         });
     });
-    describe(`changePassword`, function() {
-        it(`Will call db update`, async function() {
+    describe(`changePassword`, function () {
+        it(`Will call db update`, async function () {
             const username = `thisIsUserName`;
             const password = `ThisIsPassword`;
 
@@ -89,8 +89,8 @@ describe(`Users class`, function() {
             collectionMock.update.restore(); // Unwraps the spy
         });
     });
-    describe(`deleteUser`, function() {
-        it(`Will call db remove`, async function() {
+    describe(`deleteUser`, function () {
+        it(`Will call db remove`, async function () {
             const username = `thisIsUserName`;
 
             sinon.spy(collectionMock, `remove`);
