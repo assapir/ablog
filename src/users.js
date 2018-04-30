@@ -23,14 +23,14 @@ class Users {
         }
     }
 
-    async changeUsername(username) {
+    async changeUsername(oldUsername, newUsername) {
         try {
             return await this.collection.update(
-                { username: username },
-                { $set: { username: username } },
+                { username: oldUsername },
+                { $set: { username: newUsername } },
                 { "upsert": false });
         } catch (error) {
-            throw new Error(`Unable to update ${username} - ${error.message}`);
+            throw new Error(`Unable to update ${oldUsername} - ${error.message}`);
         }
     }
 
