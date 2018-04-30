@@ -28,7 +28,7 @@ describe(`Users class`, function () {
 
             const users = new Users(collectionMock);
             await users.addUser(username, password);
-            expect(collectionMock.insert.calledWithExactly({ username: username, password: password }));
+            expect(collectionMock.insert.calledWithExactly({ username: username, password: password })).to.be.true;
             collectionMock.insert.restore(); // Unwraps the spy
         });
 
@@ -58,7 +58,7 @@ describe(`Users class`, function () {
 
             const users = new Users(collectionMock);
             await users.checkUser(username);
-            expect(collectionMock.find.calledWithExactly({ username: username }));
+            expect(collectionMock.find.calledWithExactly({ username: username })).to.be.true;
             collectionMock.find.restore(); // Unwraps the spy
         });
     });
@@ -73,7 +73,7 @@ describe(`Users class`, function () {
             await users.changeUsername(username);
             expect(collectionMock.update.calledWithExactly({ username: username },
                 { $set: { username: username } },
-                { "upsert": false }));
+                { "upsert": false })).to.be.true;
             collectionMock.update.restore(); // Unwraps the spy
         });
     });
@@ -89,7 +89,7 @@ describe(`Users class`, function () {
             await users.changePassword(username, password);
             expect(collectionMock.update.calledWithExactly({ username: username },
                 { $set: { password: password } },
-                { "upsert": false }));
+                { "upsert": false })).to.be.true;
             collectionMock.update.restore(); // Unwraps the spy
         });
     });
@@ -104,7 +104,7 @@ describe(`Users class`, function () {
             await users.deleteUser(username);
             expect(collectionMock.remove.calledWithExactly({ username: username },
                 { $set: { username: username } },
-                { "upsert": false }));
+                { "upsert": false })).to.be.true;
             collectionMock.remove.restore(); // Unwraps the spy
         });
     });
