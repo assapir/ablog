@@ -1,20 +1,19 @@
 'use strict';
 
 const supertest = require(`supertest`);
-const sinon = require(`sinon`);
 const expect = require(`chai`).expect;
 const express = require(`express`);
 const mongo = require(`mongo-mock`);
 const MongoClient = mongo.MongoClient;
 
 describe(`/User API tests`, function () {
-    let app, request;
+    let app, request, client;
 
     beforeEach(async function () {
         app = express();
 
         const router = require(`../lib/user_control.js`);
-        const client = await MongoClient.connect(`mongodb://localhost:27017/`);
+        client = await MongoClient.connect(`mongodb://localhost:27017/`);
         router.UserRouter(app, client);
         request = supertest(app);
     });
@@ -65,12 +64,17 @@ describe(`/User API tests`, function () {
                 });
         });
 
-        it(`Will return error json already exist`, function (done) {
+        it(`Will return error on double entrence`, function (done) {
             const username = `someUsername`;
             const password = `somePassword`;
 
-            const err = new Error(`error`);
-            err.code = 11000;
+            request.post(`/user/add`)
+            .send({ username: username, password: `someOtherPassword` })
+            .end((err, res) => {
+                expect(err).to.be.null;
+                expect(res.status).to.be.equal(200);
+            });
+            
             request.post(`/user/add`)
                 .send({ username: username, password: password })
                 .expect(400)
