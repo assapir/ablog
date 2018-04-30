@@ -31,6 +31,7 @@ describe(`Users class`, function () {
             expect(collectionMock.insert.calledWithExactly({ username: username, password: password }));
             collectionMock.insert.restore(); // Unwraps the spy
         });
+
         it(`Will will throw with error code`, async function () {
             const username = `thisIsUserName`;
             const password = `ThisIsPassword`;
@@ -48,6 +49,7 @@ describe(`Users class`, function () {
             collectionMock.insert.restore(); // Unwraps the spy
         });
     });
+
     describe(`checkUser`, function () {
         it(`Will call db find`, async function () {
             const username = `thisIsUserName`;
@@ -60,6 +62,7 @@ describe(`Users class`, function () {
             collectionMock.find.restore(); // Unwraps the spy
         });
     });
+
     describe(`changeUsername`, function () {
         it(`Will call db update`, async function () {
             const username = `thisIsUserName`;
@@ -74,6 +77,7 @@ describe(`Users class`, function () {
             collectionMock.update.restore(); // Unwraps the spy
         });
     });
+
     describe(`changePassword`, function () {
         it(`Will call db update`, async function () {
             const username = `thisIsUserName`;
@@ -89,6 +93,7 @@ describe(`Users class`, function () {
             collectionMock.update.restore(); // Unwraps the spy
         });
     });
+    
     describe(`deleteUser`, function () {
         it(`Will call db remove`, async function () {
             const username = `thisIsUserName`;

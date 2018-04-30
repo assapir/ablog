@@ -1,12 +1,14 @@
 import express from "express";
-import { userRouter } from "./user_control";
+import { MongoClient } from "mongodb";
+import { UserRouter } from "./user_control";
 const app = express();
 
 const port = 3000;
 
 app.use(`/public`, express.static(`${__dirname}/public`));
 
-app.use(`/user`, userRouter);
+const client = async () => await MongoClient.connect(`mongodb://localhost:27017/`);
+UserRouter(app, client);
 
 app.get(`/`, (req, res) => {
     res.sendFile(`${__dirname}/public/index.html`);

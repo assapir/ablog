@@ -1,105 +1,124 @@
 import express from "express";
 import joi from "joi";
-import { MongoClient } from "mongodb";
 import { Users } from './users';
 
-const userRouter = express.Router();
-
 let _users; // we want to always use the same instance (sort of singleton...)
-async function getUsersInstance() {
+async function getUsersInstance(client) {
     if (typeof _users !== `undefined`)
         return _users;
 
-    const client = await MongoClient.connect(`mongodb://localhost:27017/`);
     const db = client.db(`site`);
     const collection = db.collection(`users`);
     return _users = new Users(collection);
 }
 
+export function UserRouter(app, client) {
+    const router = express.Router();
+    app.use(`/user`, router);
 
-// for parsing POST body
-userRouter.use(express.json()); // to support JSON-encoded bodies
-userRouter.use(express.urlencoded({ extended: true })); // to support URL-encoded bodies
+    // for parsing POST body
+    router.use(express.json()); // to support JSON-encoded bodies
+    router.use(express.urlencoded({ extended: true })); // to support URL-encoded bodies
 
-userRouter.post(`/add`, async (req, res) => {
-    try {
-        const validator = checkScheme(req.body);
-        if (validator.error !== null)
-            res.status(400).send(JSON.stringify({ error: `Wrong API call: ${validator.error}` }));
+    router.post(`/add`, async (req, res, next) => {
+        try {
+            const validator = checkScheme(req.body);
+            if (validator.error !== null) {
+                let err = new Error(`Wrong API call: ${validator.error}`);
+                err.statusCode = 400;
+                throw err;
+            }
 
-        const users = await getUsersInstance();
-        const result = await users.addUser(req.body.username, req.body.password);
-        if (result.insertedCount > 0)
+            const users = await getUsersInstance(client);
+            const result = await users.addUser(req.body.username, req.body.password);
+            if (result.insertedCount > 0) {
+                res.json(result);
+                next();
+            }
+            else {
+                let err = new Error(`somthing bad happend, db problem`);
+                err.statusCode = 500;
+                next(err);
+            }
+        } catch (err) {
+            if (err.code === 11000) {
+                let error = new Error(`username already exist`);
+                error.statusCode = 400;
+                next(error);
+            }
+            else 
+                next(err);
+        }
+    });
+
+    router.get(`/:username`, async (req, res, next) => {
+        try {
+            if (typeof req.params.username === `undefined`)
+                throw new Error(`Wrong API call, No username parameter`);
+
+            const users = await getUsersInstance(client);
+            const result = await users.checkUser(req.params.username);
+            if (result.length > 0)
+                res.status(400).json({ message: `found ${result.length} for ${req.params.username}` });
+            else
+                throw new Error(`No result yield for ${req.params.username}`);
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    router.get(`/delete/:username`, async (req, res, next) => {
+        try {
+            if (typeof req.params.username === `undefined`)
+                throw new Error(`Wrong API call, No username parameter`);
+
+            const users = await getUsersInstance(client);
+            const result = await users.deleteUser(req.params.username);
+            if (result.result.n > 0)
+                res.status(400).json({ message: `deleted ${result.result.n} for ${req.params.username}` });
+            else
+                throw new Error(`No result yield for ${req.params.username}`);
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    router.post(`/password`, async (req, res, next) => {
+        try {
+            const validator = checkPassword(req.body);
+            if (validator.error !== null)
+                throw new Error(`New password isn't good enought`);
+
+            const users = await getUsersInstance(client);
+            const result = await users.changePassword(req.body.username, req.body.password);
+            res.json(result);
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    router.post(`/username`, async (req, res, next) => {
+        try {
+            const validator = checkUsername(req.body);
+            if (validator.error !== null)
+                throw new Error(`New useranem isn't good enought`);
+
+            const users = await getUsersInstance(client);
+            const result = await users.changeUsername(req.body.oldUsername, req.body.newUsername);
             res.send(result);
-        else
-            res.status(500).send(JSON.stringify({ error: `somthing bad happend, db problem` }));
-    } catch (err) {
-        if (err.code === 11000)
-            res.status(400).send(JSON.stringify({ error: `username already exist` }));
-        else
-            res.status(400).send(JSON.stringify({ error: err }));
-    }
-});
+        } catch (err) {
+            next(err);
+        }
+    });
 
-userRouter.get(`/:username`, async (req, res) => {
-    try {
-        if (typeof req.params.username === `undefined`)
-            throw new Error(`Wrong API call, No username parameter`);
+    // router error handler
+    router.use((err, req, res, next) => {
+        res.status(err.statusCode).json({ error: err.message });
+        next();
+    });
+}
 
-        const users = await getUsersInstance();
-        const result = await users.checkUser(req.params.username);
-        if (result.length > 0)
-            res.status(400).send(JSON.stringify({ message: `found ${result.length} for ${req.params.username}` }));
-        else
-            throw new Error(`No result yield for ${req.params.username}`);
-    } catch (err) {
-        res.status(400).send({ error: err.message });
-    }
-});
 
-userRouter.get(`/delete/:username`, async (req, res) => {
-    try {
-        if (typeof req.params.username === `undefined`)
-            throw new Error(`Wrong API call, No username parameter`);
-        
-        const users = await getUsersInstance();
-        const result = await users.deleteUser(req.params.username);
-        if (result.result.n > 0)
-            res.status(400).send(JSON.stringify({ message: `deleted ${result.result.n} for ${req.params.username}` }));
-        else
-            throw new Error(`No result yield for ${req.params.username}`);
-    } catch (err) {
-        res.status(400).send({ error: err.message });
-    }
-});
-
-userRouter.post(`/password`, async (req, res) => {
-    try {
-        const validator = checkPassword(req.body);
-        if (validator.error !== null)
-            throw new Error(`New password isn't good enought`);
-
-        const users = await getUsersInstance();
-        const result = await users.changePassword(req.body.username, req.body.password);
-        res.send(result);
-    } catch (err) {
-        res.status(400).send({ error: err.message });
-    }
-});
-
-userRouter.post(`/username`, async (req, res) => {
-    try {
-        const validator = checkUsername(req.body);
-        if (validator.error !== null)
-            throw new Error(`New useranem isn't good enought`);
-
-        const users = await getUsersInstance();
-        const result = await users.changeUsername(req.body.oldUsername, req.body.newUsername);
-        res.send(result);
-    } catch (err) {
-        res.status(400).send({ error: err.message });
-    }
-});
 
 function checkUsername(reqBody) {
     const schema = joi.object().keys({
@@ -127,5 +146,3 @@ function checkScheme(reqBody) {
     else if (passwordValidator.error !== null)
         return passwordValidator;
 }
-
-export { userRouter };
