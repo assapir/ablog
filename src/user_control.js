@@ -118,14 +118,12 @@ export function UserRouter(app, client) {
         }
     });
 
-    // router error handler
+    // error handler middleware
     router.use((err, req, res, next) => {
         res.status(typeof err.statusCode === `undefined` ? 500 : err.statusCode).json({ error: err.message });
         next();
     });
 }
-
-
 
 function checkUsername(reqBody) {
     const schema = joi.object().keys({

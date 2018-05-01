@@ -7,7 +7,7 @@ const port = 3000;
 
 app.use(`/public`, express.static(`${__dirname}/public`));
 
-+UserRouter(app);
+UserRouter(app);
 
 app.get(`/`, (req, res) => {
     res.sendFile(`${__dirname}/public/index.html`);
