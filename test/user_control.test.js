@@ -77,27 +77,34 @@ describe(`/User API tests`, async function () {
                 });
         });
 
-        it(`Will return error on double entrence`, function (done) {
+        it(`Will return error on double entrence`, async function () {
             const username = `SomeUsername`;
             const password = `somePassword`;
 
-            request.post(`/user/add`)
+            await request.post(`/user/add`)
                 .send({ username: username, password: `someOtherPassword` })
-                .end((err, res) => {
-                    if (err)
-                        done(err);
-                    expect(res.status).to.be.equal(200);
-                });
+                .expect(200);
 
-            request.post(`/user/add`)
+            const res = await request.post(`/user/add`)
                 .send({ username: username, password: password })
-                .expect(400)
-                .end((err, res) => {
-                    if (err)
-                        done(err);
-                    expect(res.text).to.contain(`username already exist`);
-                    done();
-                });
+                .expect(400);
+            expect(res.text).to.contain(`username already exist`);
+        });
+    });
+
+    describe(`/:username GET`, async function () {
+
+        it(`Will return found for found user`, async function () {
+            const username = `SomeUsername`;
+            const password = `somePassword`;
+
+            await request.post(`/user/add`)
+                .send({ username: username, password: password })
+                .expect(200);
+
+            const res = await request.get(`/user/${username}`)
+                .expect(200);
+            expect(res.text).to.contain(`found 1 for ${username}`);
         });
     });
 });

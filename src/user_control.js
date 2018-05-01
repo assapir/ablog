@@ -13,7 +13,7 @@ async function getUsersInstance() {
         const dbPath = `mongodb://localhost:27017/`;
         _client = await MongoClient.connect(dbPath);
     }
-    
+
     const db = _client.db(`site`);
     const collection = db.collection(`users`);
     return _users = new Users(collection);
@@ -54,7 +54,7 @@ export function UserRouter(app, client) {
                 error.statusCode = 400;
                 next(error);
             }
-            else 
+            else
                 next(err);
         }
     });
@@ -67,9 +67,12 @@ export function UserRouter(app, client) {
             const users = await getUsersInstance();
             const result = await users.checkUser(req.params.username);
             if (result.length > 0)
-                res.status(400).json({ message: `found ${result.length} for ${req.params.username}` });
-            else
-                throw new Error(`No result yield for ${req.params.username}`);
+                res.status(200).json({ message: `found ${result.length} for ${req.params.username}` });
+            else {
+                let err = new Error(`No result yield for ${req.params.username}`);
+                err.statusCode = 404;
+                throw err;
+            }
         } catch (err) {
             next(err);
         }
