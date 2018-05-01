@@ -30,7 +30,7 @@ describe(`/User API tests`, async function () {
 
     describe(`/add POST`, function () {
         it(`Will add user`, function (done) {
-            const username = `SomeUserName`;
+            const username = `SomeUsername`;
             const password = `SomePassword`;
 
             request.post(`/user/add`)
@@ -63,7 +63,7 @@ describe(`/User API tests`, async function () {
         });
 
         it(`Will return error json in short password`, function (done) {
-            const username = `someUsername`;
+            const username = `SomeUsername`;
             const shortPassword = `pass`;
 
             request.post(`/user/add`)
@@ -78,7 +78,7 @@ describe(`/User API tests`, async function () {
         });
 
         it(`Will return error on double entrence`, function (done) {
-            const username = `someUsername`;
+            const username = `SomeUsername`;
             const password = `somePassword`;
 
             request.post(`/user/add`)

@@ -3,19 +3,24 @@ import joi from "joi";
 import { MongoClient } from "mongodb";
 import { Users } from './users';
 
+let _client;
 let _users; // we want to always use the same instance (sort of singleton...)
 async function getUsersInstance() {
     if (typeof _users !== `undefined`)
         return _users;
 
-    const dbPath = `mongodb://localhost:27017/`;
-    const client = await MongoClient.connect(dbPath);
-    const db = client.db(`site`);
+    if (typeof _client === `undefined`) {
+        const dbPath = `mongodb://localhost:27017/`;
+        _client = await MongoClient.connect(dbPath);
+    }
+    
+    const db = _client.db(`site`);
     const collection = db.collection(`users`);
     return _users = new Users(collection);
 }
 
-export function UserRouter(app) {
+export function UserRouter(app, client) {
+    _client = client; // this allow to inject db mock for tests
     const router = express.Router();
     app.use(`/user`, router);
 
