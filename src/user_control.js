@@ -24,7 +24,7 @@ export function UserRouter(app, client) {
     const router = express.Router();
     app.use(`/user`, router);
 
-    // for parsing POST body
+    // middlewares for parsing POST body
     router.use(express.json()); // to support JSON-encoded bodies
     router.use(express.urlencoded({ extended: true })); // to support URL-encoded bodies
 
@@ -39,15 +39,8 @@ export function UserRouter(app, client) {
 
             const users = await getUsersInstance();
             const result = await users.addUser(req.body.username, req.body.password);
-            if (result.insertedCount > 0) {
-                res.json(result);
-                next();
-            }
-            else {
-                let err = new Error(`somthing bad happend, db problem`);
-                err.statusCode = 500;
-                next(err);
-            }
+            if (result.insertedCount > 0)
+                res.status(200).json(result);
         } catch (err) {
             if (err.code === 11000) {
                 let error = new Error(`username already exist`);
@@ -61,9 +54,6 @@ export function UserRouter(app, client) {
 
     router.get(`/:username`, async (req, res, next) => {
         try {
-            if (typeof req.params.username === `undefined`)
-                throw new Error(`Wrong API call, No username parameter`);
-
             const users = await getUsersInstance();
             const result = await users.checkUser(req.params.username);
             if (result.length > 0)
@@ -80,15 +70,15 @@ export function UserRouter(app, client) {
 
     router.get(`/delete/:username`, async (req, res, next) => {
         try {
-            if (typeof req.params.username === `undefined`)
-                throw new Error(`Wrong API call, No username parameter`);
-
             const users = await getUsersInstance();
             const result = await users.deleteUser(req.params.username);
             if (result.result.n > 0)
-                res.status(400).json({ message: `deleted ${result.result.n} for ${req.params.username}` });
-            else
-                throw new Error(`No result yield for ${req.params.username}`);
+                res.status(200).json({ message: `deleted ${result.result.n} for ${req.params.username}` });
+            else {
+                let err = new Error(`No result yield for ${req.params.username}`);
+                err.statusCode = 404;
+                throw err;
+            }
         } catch (err) {
             next(err);
         }
@@ -97,12 +87,15 @@ export function UserRouter(app, client) {
     router.post(`/password`, async (req, res, next) => {
         try {
             const validator = checkPassword(req.body);
-            if (validator.error !== null)
-                throw new Error(`New password isn't good enought`);
+            if (validator.error !== null) {
+                const err = new Error(`New password isn't good enought`);
+                err.statusCode = 404;
+                throw err;
+            }
 
             const users = await getUsersInstance();
             const result = await users.changePassword(req.body.username, req.body.password);
-            res.json(result);
+            res.status(200).json(result);
         } catch (err) {
             next(err);
         }
@@ -111,12 +104,15 @@ export function UserRouter(app, client) {
     router.post(`/username`, async (req, res, next) => {
         try {
             const validator = checkUsername(req.body);
-            if (validator.error !== null)
-                throw new Error(`New useranem isn't good enought`);
+            if (validator.error !== null) {
+                const err = new Error(`New username isn't good enought`);
+                err.statusCode = 404;
+                throw err;
+            }
 
             const users = await getUsersInstance();
-            const result = await users.changeUsername(req.body.oldUsername, req.body.newUsername);
-            res.send(result);
+            const result = await users.changeUsername(req.body.oldUsername, req.body.username);
+            res.status(200).json(result);
         } catch (err) {
             next(err);
         }
