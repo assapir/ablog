@@ -58,7 +58,7 @@ describe(`Users class`, function () {
 
             const users = new Users(collectionMock);
             await users.checkUser(username);
-            expect(collectionMock.find.calledWithExactly({ username: username })).to.be.true;
+            expect(collectionMock.find.calledWith({ username: username })).to.be.true;
             collectionMock.find.restore(); // Unwraps the spy
         });
     });
@@ -66,12 +66,13 @@ describe(`Users class`, function () {
     describe(`changeUsername`, function () {
         it(`Will call db update`, async function () {
             const username = `thisIsUserName`;
+            const oldUsername = `oldUsername`;
 
             sinon.spy(collectionMock, `update`);
 
             const users = new Users(collectionMock);
-            await users.changeUsername(username);
-            expect(collectionMock.update.calledWithExactly({ username: username },
+            await users.changeUsername(oldUsername, username);
+            expect(collectionMock.update.calledWith({ username: oldUsername },
                 { $set: { username: username } },
                 { "upsert": false })).to.be.true;
             collectionMock.update.restore(); // Unwraps the spy
@@ -87,7 +88,7 @@ describe(`Users class`, function () {
 
             const users = new Users(collectionMock);
             await users.changePassword(username, password);
-            expect(collectionMock.update.calledWithExactly({ username: username },
+            expect(collectionMock.update.calledWith({ username: username },
                 { $set: { password: password } },
                 { "upsert": false })).to.be.true;
             collectionMock.update.restore(); // Unwraps the spy
@@ -102,9 +103,7 @@ describe(`Users class`, function () {
 
             const users = new Users(collectionMock);
             await users.deleteUser(username);
-            expect(collectionMock.remove.calledWithExactly({ username: username },
-                { $set: { username: username } },
-                { "upsert": false })).to.be.true;
+            expect(collectionMock.remove.calledWithExactly({ username: username })).to.be.true;
             collectionMock.remove.restore(); // Unwraps the spy
         });
     });

@@ -1,18 +1,21 @@
 import express from "express";
 import joi from "joi";
+import { MongoClient } from "mongodb";
 import { Users } from './users';
 
 let _users; // we want to always use the same instance (sort of singleton...)
-async function getUsersInstance(client) {
+async function getUsersInstance() {
     if (typeof _users !== `undefined`)
         return _users;
 
+    const dbPath = `mongodb://localhost:27017/`;
+    const client = await MongoClient.connect(dbPath);
     const db = client.db(`site`);
     const collection = db.collection(`users`);
     return _users = new Users(collection);
 }
 
-export function UserRouter(app, client) {
+export function UserRouter(app) {
     const router = express.Router();
     app.use(`/user`, router);
 
@@ -29,7 +32,7 @@ export function UserRouter(app, client) {
                 throw err;
             }
 
-            const users = await getUsersInstance(client);
+            const users = await getUsersInstance();
             const result = await users.addUser(req.body.username, req.body.password);
             if (result.insertedCount > 0) {
                 res.json(result);
@@ -56,7 +59,7 @@ export function UserRouter(app, client) {
             if (typeof req.params.username === `undefined`)
                 throw new Error(`Wrong API call, No username parameter`);
 
-            const users = await getUsersInstance(client);
+            const users = await getUsersInstance();
             const result = await users.checkUser(req.params.username);
             if (result.length > 0)
                 res.status(400).json({ message: `found ${result.length} for ${req.params.username}` });
@@ -72,7 +75,7 @@ export function UserRouter(app, client) {
             if (typeof req.params.username === `undefined`)
                 throw new Error(`Wrong API call, No username parameter`);
 
-            const users = await getUsersInstance(client);
+            const users = await getUsersInstance();
             const result = await users.deleteUser(req.params.username);
             if (result.result.n > 0)
                 res.status(400).json({ message: `deleted ${result.result.n} for ${req.params.username}` });
@@ -89,7 +92,7 @@ export function UserRouter(app, client) {
             if (validator.error !== null)
                 throw new Error(`New password isn't good enought`);
 
-            const users = await getUsersInstance(client);
+            const users = await getUsersInstance();
             const result = await users.changePassword(req.body.username, req.body.password);
             res.json(result);
         } catch (err) {
@@ -103,7 +106,7 @@ export function UserRouter(app, client) {
             if (validator.error !== null)
                 throw new Error(`New useranem isn't good enought`);
 
-            const users = await getUsersInstance(client);
+            const users = await getUsersInstance();
             const result = await users.changeUsername(req.body.oldUsername, req.body.newUsername);
             res.send(result);
         } catch (err) {
@@ -113,7 +116,7 @@ export function UserRouter(app, client) {
 
     // router error handler
     router.use((err, req, res, next) => {
-        res.status(err.statusCode).json({ error: err.message });
+        res.status(typeof err.statusCode === `undefined` ? 500 : err.statusCode).json({ error: err.message });
         next();
     });
 }
