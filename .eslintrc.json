@@ -52,7 +52,11 @@
         ],
         "space-before-function-paren": [
             "error",
-            "never"
+            {
+                "anonymous": "always",
+                "named": "never",
+                "asyncArrow": "always"
+            }
         ],
         "security/detect-non-literal-require": [
             "off"
