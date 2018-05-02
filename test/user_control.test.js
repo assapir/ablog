@@ -201,4 +201,58 @@ describe(`/User API tests`, async function () {
             expect(dbRes).to.have.a.lengthOf(0);
         });
     });
+
+    describe(`/auth POST`, async function () {
+        it(`Will return if username and password are correct`, async function () {
+            const username = `someUsername`;
+            const password = `somePassword`;
+
+            await request.post(`/user/add`)
+                .send({ username: username, password: password }).expect(200);
+
+            const res = await request.post(`/user/auth`)
+                .send({ username: username, password: password }).expect(200);
+            expect(res.text).to.be.contain(`succesful auth for user ${username}`);
+        });
+
+        it(`Will return if username and password are correct ignoring triming`, async function () {
+            const username = `someUsername`;
+            const password = `somePassword`;
+            const passwordWithWhiteSpaces = `   somePassword         `;
+            const usernameWithWhiteSpaces = `      someUsername `;
+
+            await request.post(`/user/add`)
+                .send({ username: username, password: password }).expect(200);
+
+            const res = await request.post(`/user/auth`)
+                .send({ username: usernameWithWhiteSpaces, password: passwordWithWhiteSpaces }).expect(200);
+            expect(res.text).to.be.contain(`succesful auth for user ${username}`);
+        });
+
+        it(`Will reject if password is incorrect`, async function () {
+            const username = `someUsername`;
+            const password = `somePassword`;
+            const wrongPassword =`wrongPassword`;
+
+            await request.post(`/user/add`)
+                .send({ username: username, password: password }).expect(200);
+
+            const res = await request.post(`/user/auth`)
+                .send({ username: username, password: wrongPassword }).expect(401);
+            expect(res.text).to.be.contain(`Wrong username or password`);
+        });
+
+        it(`Will reject if username is incorrect`, async function () {
+            const username = `someUsername`;
+            const password = `somePassword`;
+            const wrongUsername =`wrongUsername`;
+
+            await request.post(`/user/add`)
+                .send({ username: username, password: password }).expect(200);
+
+            const res = await request.post(`/user/auth`)
+                .send({ username: wrongUsername, password: password }).expect(401);
+            expect(res.text).to.be.contain(`Wrong username or password`);
+        });
+    });
 });

@@ -56,13 +56,13 @@ export function UserRouter(app, client) {
         try {
             const users = await getUsersInstance();
             const result = await users.checkUser(req.params.username);
-            if (result.length > 0)
-                res.status(200).json({ message: `found ${result.length} for ${req.params.username}` });
-            else {
+            if (result.length <= 0) {
                 let err = new Error(`No result yield for ${req.params.username}`);
                 err.statusCode = 404;
                 throw err;
             }
+
+            res.status(200).json({ message: `found ${result.length} for ${req.params.username}` });
         } catch (err) {
             next(err);
         }
@@ -113,6 +113,25 @@ export function UserRouter(app, client) {
             const users = await getUsersInstance();
             const result = await users.changeUsername(req.body.oldUsername, req.body.username);
             res.status(200).json(result);
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    router.post(`/auth/`, async (req, res, next) => {
+        try {
+            let err = new Error(`Wrong username or password`);
+            err.statusCode = 401;
+            const users = await getUsersInstance();
+            const result = await users.checkUser(req.body.username);
+            if (result.length <= 0)
+                throw err;
+
+            const userObject = result[0];
+            if (userObject.password.trim() !== req.body.password.trim())
+                throw err;
+
+            res.status(200).json({ message: `succesful auth for user ${req.body.username.trim()}` });
         } catch (err) {
             next(err);
         }

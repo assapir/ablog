@@ -6,7 +6,7 @@ class Users {
 
     async checkUser(username) {
         try {
-            const result = await this.collection.find({ username: username }, { projection: { _id: 0 } });
+            const result = await this.collection.find({ username: username.trim() }, { projection: { _id: 0 } });
             return await result.toArray();
         } catch (error) {
             throw new Error(`${username} not found - ${error.message}`);
