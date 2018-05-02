@@ -21,7 +21,7 @@ beforeEach(async function () {
 describe(`Users class`, function () {
     describe(`addUser`, function () {
         it(`Will call db insert`, async function () {
-            const username = `thisIsUserName`;
+            const username = `thisIsUsername`;
             const password = `ThisIsPassword`;
 
             sinon.spy(collectionMock, `insert`);
@@ -33,7 +33,7 @@ describe(`Users class`, function () {
         });
 
         it(`Will will throw with error code`, async function () {
-            const username = `thisIsUserName`;
+            const username = `thisIsUsername`;
             const password = `ThisIsPassword`;
 
             const err = new Error(`error`);
@@ -52,7 +52,7 @@ describe(`Users class`, function () {
 
     describe(`checkUser`, function () {
         it(`Will call db find`, async function () {
-            const username = `thisIsUserName`;
+            const username = `thisIsUsername`;
 
             sinon.spy(collectionMock, `find`);
 
@@ -61,11 +61,22 @@ describe(`Users class`, function () {
             expect(collectionMock.find.calledWith({ username: username })).to.be.true;
             collectionMock.find.restore(); // Unwraps the spy
         });
+
+        it(`Will get username triming`, async function () {
+            const username = `thisIsUsername       `;
+
+            sinon.spy(collectionMock, `find`);
+
+            const users = new Users(collectionMock);
+            await users.checkUser(username);
+            expect(collectionMock.find.calledWith({ username: username.trim() })).to.be.true;
+            collectionMock.find.restore(); // Unwraps the spy
+        });
     });
 
     describe(`changeUsername`, function () {
         it(`Will call db update`, async function () {
-            const username = `thisIsUserName`;
+            const username = `thisIsUsername`;
             const oldUsername = `oldUsername`;
 
             sinon.spy(collectionMock, `update`);
@@ -81,7 +92,7 @@ describe(`Users class`, function () {
 
     describe(`changePassword`, function () {
         it(`Will call db update`, async function () {
-            const username = `thisIsUserName`;
+            const username = `thisIsUsername`;
             const password = `ThisIsPassword`;
 
             sinon.spy(collectionMock, `update`);
@@ -97,7 +108,7 @@ describe(`Users class`, function () {
     
     describe(`deleteUser`, function () {
         it(`Will call db remove`, async function () {
-            const username = `thisIsUserName`;
+            const username = `thisIsUsername`;
 
             sinon.spy(collectionMock, `remove`);
 
