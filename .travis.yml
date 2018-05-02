@@ -1,12 +1,15 @@
 language: node_js
-os: 
+os:
   - osx
   - linux
+branches:
+  only:
+    - master
 node_js:
   - "node"
 script:
   - npm run eslint
   - npm run build
   - npm test
-after_success: 
+after_success:
   - npm run coverage
